@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PokeAPI Charts</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <div id="chart1"></div>
+  <div id="chart2"></div>
+  <div id="chart3"></div>
+  <div id="chart4"></div>
+
+  <script>
+    // Función para llamar a la API de PokeAPI y obtener los datos necesarios para el gráfico
+    async function fetchPokeAPI(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
+    }
+
+    // Gráfico 1: Número de Pokémon por tipo
+    fetchPokeAPI('https://pokeapi.co/api/v2/type')
+      .then(data => {
+        const types = data.results.map(type => type.name);
+
+        const promises = types.map(type => {
+          return fetchPokeAPI(`https://pokeapi.co/api/v2/type/${type}`)
+            .then(typeData => {
+              const numPokemons = typeData.pokemon.length;
+              return numPokemons;
+            });
+        });
+
+        Promise.all(promises)
+          .then(numPokemons => {
+            const chartData = [{
+              x: types,
+              y: numPokemons,
+              type: 'bar'
+            }];
+
+            Plotly.newPlot('chart1', chartData, { title: 'Número de Pokémon por tipo' });
+          });
+      });
+
+    // Gráfico 2 aquí //
+
+    // Gráfico 3: Número de Pokémon por color
+    fetchPokeAPI('https://pokeapi.co/api/v2/pokemon-color')
+      .then(data => {
+        const colors = data.results.map(color => color.name);
+
+        const promises = colors.map(color => {
+          return fetchPokeAPI(`https://pokeapi.co/api/v2/pokemon-color/${color}`)
+            .then(colorData => {
+              const numPokemons = colorData.pokemon_species.length;
+              return numPokemons;
+            });
+        });
+
+        Promise.all(promises)
+          .then(numPokemons => {
+            const chartData = [{
+              labels: colors,
+              values: numPokemons,
+              type: 'pie'
+            }];
+
+            Plotly.newPlot('chart3', chartData, { title: 'Número de Pokémon por color' });
+          });
+      });
+
+    // Gráfico 4 aquí //
+
+  </script>
+</body>
+</html>
