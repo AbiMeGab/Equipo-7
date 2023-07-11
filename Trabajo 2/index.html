@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PokeAPI Charts</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <div id="chart1"></div>
+  <div id="chart2"></div>
+  <div id="chart3"></div>
+  <div id="chart4"></div>
+  
+
+  <script>
+    // Función para llamar a la API de PokeAPI y obtener los datos necesarios para el gráfico
+    async function fetchPokeAPI(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
+    }
+
+    // Gráfico 1: Número de Pokémon por tipo
+    fetchPokeAPI('https://pokeapi.co/api/v2/type')
+      .then(data => {
+        const types = data.results.map(type => type.name);
+
+        const promises = types.map(type => {
+          return fetchPokeAPI(`https://pokeapi.co/api/v2/type/${type}`)
+            .then(typeData => {
+              const numPokemons = typeData.pokemon.length;
+              return numPokemons;
+            });
+        });
+
+        Promise.all(promises)
+          .then(numPokemons => {
+            const chartData = [{
+              x: types,
+              y: numPokemons,
+              type: 'bar'
+            }];
+
+            Plotly.newPlot('chart1', chartData, { title: 'Número de Pokémon por tipo' });
+          });
+      });
+      //Grafica 2
+      async function fetchPokeAPI(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
+    }
+
+    // Obtener los datos de los grupos de huevos de los Pokémon
+    fetchPokeAPI('https://pokeapi.co/api/v2/egg-group')
+      .then(data => {
+        const eggGroups = data.results.map(eggGroup => eggGroup.name);
+        const promises = eggGroups.map(eggGroup => {
+          return fetchPokeAPI(`https://pokeapi.co/api/v2/egg-group/${eggGroup}`)
+            .then(eggGroupData => {
+              const numPokemons = eggGroupData.pokemon_species.length;
+              return numPokemons;
+            });
+        });
+        return Promise.all(promises)
+          .then(counts => {
+            const chartData = [{
+              x: eggGroups,
+              y: counts,
+              type: 'bar'
+            }];
+            const layout = {
+              title: 'Número de Pokémon por Grupo de Huevos',
+              xaxis: {
+                title: 'Grupo de Huevos'
+              },
+              yaxis: {
+                title: 'Cantidad de Pokémon'
+              }
+            };
+            Plotly.newPlot('chart2', chartData, layout);
+          });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
+    // Gráfico 3: Número de Pokémon por color
+    fetchPokeAPI('https://pokeapi.co/api/v2/pokemon-color')
+      .then(data => {
+        const colors = data.results.map(color => color.name);
+
+        const promises = colors.map(color => {
+          return fetchPokeAPI(`https://pokeapi.co/api/v2/pokemon-color/${color}`)
+            .then(colorData => {
+              const numPokemons = colorData.pokemon_species.length;
+              return numPokemons;
+            });
+        });
+
+        Promise.all(promises)
+          .then(numPokemons => {
+            const chartData = [{
+              labels: colors,
+              values: numPokemons,
+              type: 'pie'
+            }];
+
+            Plotly.newPlot('chart3', chartData, { title: 'Número de Pokémon por color' });
+          });
+      });
+
+    // Gráfico 4 generos
+    async function fetchPokeAPI(url) {
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
+    }
+
+    // Obtener los datos de los géneros de los Pokémon
+    fetchPokeAPI('https://pokeapi.co/api/v2/gender')
+      .then(data => {
+        const genders = data.results.map(gender => gender.name);
+        const promises = genders.map(gender => {
+          return fetchPokeAPI(`https://pokeapi.co/api/v2/gender/${gender}`)
+            .then(genderData => {
+              const numPokemons = genderData.pokemon_species_details.length;
+              return numPokemons;
+            });
+        });
+        return Promise.all(promises)
+          .then(counts => {
+            const chartData = [{
+              labels: genders,
+              values: counts,
+              type: 'pie'
+            }];
+            const layout = {
+              title: 'Distribución de géneros de Pokémon',
+              height: 500,
+              width: 500
+            };
+            Plotly.newPlot('chart4', chartData, layout);
+          });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
+  </script>
+</body>
+</html>
